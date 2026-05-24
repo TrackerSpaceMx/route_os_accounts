@@ -6,6 +6,7 @@ interface AccountFormProps {
   accounts: Account[];
   onBack: () => void;
   onSave: (account: Account) => void;
+  serverError?: string | null;
 }
 
 interface FormErrors {
@@ -18,7 +19,7 @@ interface FormErrors {
   secretKey: boolean;
 }
 
-export function AccountForm({ accounts, onBack, onSave }: AccountFormProps) {
+export function AccountForm({ accounts, onBack, onSave, serverError }: AccountFormProps) {
   const [name, setName] = useState('');
   const [company, setCompany] = useState('');
   const [slug, setSlug] = useState('');
@@ -185,13 +186,31 @@ export function AccountForm({ accounts, onBack, onSave }: AccountFormProps) {
           <i className="ti ti-key" /> Credenciales
         </div>
 
+        {serverError && (
+          <div style={{
+            background: 'rgba(239,68,68,0.10)',
+            border: '1px solid rgba(239,68,68,0.30)',
+            borderRadius: 8,
+            padding: '10px 14px',
+            fontSize: 13,
+            color: '#EF4444',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 8,
+            marginBottom: 14,
+          }}>
+            <i className="ti ti-alert-circle" style={{ flexShrink: 0 }} />
+            {serverError}
+          </div>
+        )}
+
         <div className="form-grid">
           {/* API Key */}
           <div className="fg">
             <label className="fl">API Key</label>
             <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
               <input
-                style={{ ...fi(errors.apiKey, true), paddingRight: 36 }}
+                style={{ ...fi(errors.apiKey || !!serverError, true), paddingRight: 36 }}
                 type={showApiKey ? 'text' : 'password'}
                 placeholder="rk_xxxxxxxxxxxxxxxx"
                 value={apiKey}
@@ -212,7 +231,7 @@ export function AccountForm({ accounts, onBack, onSave }: AccountFormProps) {
             <label className="fl">Secret Key</label>
             <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
               <input
-                style={{ ...fi(errors.secretKey, true), paddingRight: 36 }}
+                style={{ ...fi(errors.secretKey || !!serverError, true), paddingRight: 36 }}
                 type={showSecret ? 'text' : 'password'}
                 placeholder="sk_xxxxxxxxxxxxxxxx"
                 value={secretKey}

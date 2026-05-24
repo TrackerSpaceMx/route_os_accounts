@@ -27,6 +27,7 @@ function AppInner() {
   const [loadingAccounts, setLoadingAccounts] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
   const [toast, setToast] = useState<ToastState>({ message: '', type: 'ok', visible: false });
+  const [formError, setFormError] = useState<string | null>(null);
 
   const showToast = useCallback((message: string, type: ToastType) => {
     setToast({ message, type, visible: true });
@@ -63,10 +64,12 @@ function AppInner() {
 
   const goTo = (next: Screen) => {
     setAnimClass(next === 'form' ? 'slide-enter' : 'slide-back');
+    if (next === 'form') setFormError(null);
     setScreen(next);
   };
 
   const handleSave = async (account: Account) => {
+    setFormError(null);
     try {
       const res = await fetch(`${API}/account`, {
         method: 'POST',
@@ -86,6 +89,10 @@ function AppInner() {
       });
 
       if (res.status === 401) { logout(); return; }
+      if (res.status === 422) {
+        setFormError('La API Key o Secret Key no son válidas. Verifica las credenciales e intenta de nuevo.');
+        return;
+      }
       if (res.status === 409) { showToast('El slug o RFC ya está registrado', 'warn'); return; }
       if (!res.ok) { showToast('Error al crear la cuenta', 'warn'); return; }
 
@@ -152,6 +159,7 @@ function AppInner() {
               accounts={accounts}
               onBack={() => goTo('dashboard')}
               onSave={handleSave}
+              serverError={formError}
             />
           )}
         </div>
